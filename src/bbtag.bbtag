@@ -18,14 +18,14 @@
 ]}}
 
 {//; Encodes discord markdown into BBTag }
-{function;encodeBBTag
+{function;encodeBBTag;
     {set;~result;{params}}
     {foreach;~replace;~replaces;
         {set;~result;{inject;
-            {lb}regexreplace{semi}
-                {get;~result}{semi}
-                /({repeat;\{jget;~replace;discord};2})(.+?)\1/ig{semi}
-                [{jget;~replace;bbtag}]$2[/{jget;~replace;bbtag}]
+            {lb}regexreplace
+                {semi}{get;~result}
+                {semi}/({repeat;\{jget;~replace;discord};2})(.+?)\1/ig
+                {semi}[{jget;~replace;bbtag}]$2[/{jget;~replace;bbtag}]
             {rb}
         }}
     }
@@ -37,10 +37,10 @@
     {set;~result;{params}}
     {foreach;~replace;~replaces;
         {set;~result;{inject;
-            {lb}regexreplace{semi}
-                {get;~result}{semi}
-                /\[\/?{jget;~replace;bbtag}\]/ig{semi}
-                {repeat;{jget;~replace;discord};2}
+            {lb}regexreplace
+                {semi}{get;~result}
+                {semi}/\[\/?{jget;~replace;bbtag}\]/ig
+                {semi}{repeat;{jget;~replace;discord};2}
             {rb}
         }}
     }
