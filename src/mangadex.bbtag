@@ -1,0 +1,154 @@
+{exec;import_bbtag}
+{exec;import_tracker}
+
+{set;~flags;{j;[
+    {
+        "flag": "_",
+        "variable": "title",
+        "isRequired": true
+    },
+    {
+        "flag": "a",
+        "variable": "author",
+        "isRequired": false
+    },
+    {
+        "flag": "d",
+        "variable": "description",
+        "isRequired": false
+    },
+    {
+        "flag": "i",
+        "variable": "image",
+        "isRequired": false
+    },
+    {
+        "flag": "s",
+        "variable": "subtitle",
+        "isRequired": false
+    },
+    {
+        "flag": "c",
+        "variable": "color",
+        "isRequired": false
+    }
+]}}
+
+{set;~linksJson;{j;[
+    {
+        "name": "twitter",
+        "emoji": "<:twitter:262191810804318208>",
+        "link": "((twitter|pbs\\.twimg)\\.com)|t\\.co)"
+    },
+    {
+        "name": "e-hentai",
+        "emoji": "<:ehentai:703651389598859414>",
+        "link": "e-hentai\\.org"
+    },
+    {
+        "name": "exhentai",
+        "emoji": "<:sadpanda:703651392799375521>",
+        "link": "exhentai\\.org"
+    },
+    {
+        "name": "nhentai",
+        "emoji": "<:nhentai:703650694955008032>",
+        "link": "nhentai\\.net"
+    },
+    {
+        "name": "mangadex",
+        "emoji": "<:mangadex:703650493775347736>",
+        "link": "mangadex\\.org"
+    },
+    {
+        "name": "facebook",
+        "emoji": "<:facebook:703652934558154792>",
+        "link": "(facebook|fb)\\.com"
+    }
+]}}
+
+{//; Usage: <link> [socials] }
+{function;getMangaDexEmbed;
+    {set;~json;{jget;{request;{func.getMangaDexApiLink;{params}}};body.manga}}
+    {set;~description;{func.decodeBBTag;{htmldecode;{jget;~json;description}}}}
+    {set;~title;{jget;~json;title} :flag_{jget;~json;lang_flag}:}
+    {set;~embed;
+        author.name:{jget;~json;author};
+        title:{get;~title};
+        description:{get;~description};
+        thumbnail.url:https://mangadex.org{jget;~json;cover_url};
+        fields.name:Genres;
+        fields.value:`{join;{func.getGenres;{jget;~json;genres}};`, `}`;
+        fields.inline:false;
+    }
+    {if;{func.getSocials};==;{null};
+        {push;~embed;fields.name:Links}
+        {push;~embed;fields.value:[<:mangadex:703650493775347736>]({params})}
+        {push;~embed;fields.inline:false};
+        {push;~embed;fields.name:Links}
+        {push;~embed;fields.value:{func.getSocials}}
+        {push;~embed;fields.inline:false}
+    }
+    {if;{func.getStatusImage};!=;{null};
+        {push;~embed;image.url:{func.getStatusImage}};
+        {push;~embed;footer.text:Status: {func.getStatus}}
+    }
+    {apply;embedbuild;{get;~embed}}
+}
+
+{//; Usage: <links> }
+{function;formatMarkdownLinks;{trim;
+    {set;~links;{split;{params};{space}}}
+    {set;~ret;[]}
+    {foreach;~link;~links;
+        {foreach;~linkJson;~linksJson;
+            {set;~regex;/(https?:\/\/|){jget;~linkJson;link}\/.+/i}
+            {if;{inject;{lb}regextest{semi}{get;~link}{semi}{get;~regex}{rb}};
+                {push;~ret;[{jget;~linkJson;emoji}]({get;~match;0})}
+            }
+        }
+    }
+    {slice;~ret;0}
+}}
+
+{//; Usage: <link> }
+{function;getMangaDexApiLink;
+    {if;{regextest;{params};/(https?:\/\/|)mangadex\.org\/(title|chapter)\/[0-9]+\/?/i};
+        https://mangadex.org/api/{func.getMangaDexType;{params}}/{jget;{regexmatch;{params};/[0-9]+/};0};
+        {throw;Invalid MangaDex link "{params}"}
+        {return;false}
+    }
+}
+
+{//; Usage: <link> }
+{function;getMangaDexType;
+    {switch;true;
+        {regextest;{params};/(https?:\/\/|)mangadex\.org\/title\/[0-9]+\/?/i};
+            manga;
+        {regextest;{params};/(https?:\/\/|)mangadex\.org\/chapter\/[0-9]+\/?/i};
+            chapter
+    }
+}
+
+{//; Usage: <id> }
+{function;getGenre;
+    {jget;@mangadex;genres.{params;0}}
+}
+
+{//; Usage: <[ids,...]> }
+{function;getGenres;
+    {func.map;~id;{params;0};
+        {lb}func.getGenre{semi}
+            {lb}get{semi}~id{rb}
+        {rb}
+    }
+}
+
+{//; Usage: <variable> <[items,...]> <escaped code> }
+{function;map;
+    {set;~ret.map;[]}
+    {foreach;{params;0};{params;1};
+        {push;~ret.map;{inject;{params;2}}}
+    }
+    {get;~ret.map}
+}
