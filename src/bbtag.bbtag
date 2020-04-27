@@ -20,6 +20,16 @@
 {//; Encodes discord markdown into BBTag }
 {function;encodeBBTag;
     {set;~result;{params}}
+
+    {//; Url links }
+    {set;~result;
+        {regexreplace;{get;~result}
+            ;/\[([^]]+?)\]\(([^]]+?)\)/ig;
+            [url=$2]$1[/url]
+        }
+    }
+
+    {//; Markdown formats }
     {foreach;~replace;~replaces;
         {set;~result;{inject;
             {lb}regexreplace
@@ -29,12 +39,23 @@
             {rb}
         }}
     }
+
     {get;~result}
 }
 
 {//; Decodes BBTag into Discord compatible markdown }
 {function;decodeBBTag;
     {set;~result;{params}}
+
+    {//; Url links }
+    {set;~result;
+        {regexreplace;{get;~result}
+            ;/\[url=([^]]+?)\]([^]]+?)\[\/url\]/ig;
+            [$2]($1)
+        }
+    }
+
+    {//; Markdown formats }
     {foreach;~replace;~replaces;
         {set;~result;{inject;
             {lb}regexreplace
@@ -44,5 +65,6 @@
             {rb}
         }}
     }
+
     {get;~result}
 }
