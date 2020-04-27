@@ -13,7 +13,7 @@
         },
         {
             "bbtag": "hr",
-            "discord": "{newline}"
+            "discord": "\\r\\n"
         }
 ]}}
 
@@ -24,7 +24,7 @@
     {//; Url links }
     {set;~result;
         {regexreplace;{get;~result}
-            ;/\[([^]]+?)\]\(([^]]+?)\)/ig;
+            ;/\[([^\]]+?)\]\(([^\]]+?)\)/ig;
             [url=$2]$1[/url]
         }
     }
@@ -50,7 +50,7 @@
     {//; Url links }
     {set;~result;
         {regexreplace;{get;~result}
-            ;/\[url=([^]]+?)\]([^]]+?)\[\/url\]/ig;
+            ;/\[url=([^\]]+?)\]([^\]]+?)\[\/url\]/ig;
             [$2]($1)
         }
     }

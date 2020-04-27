@@ -1,0 +1,34 @@
+{//; Usage: <variable> <name> <value> [inline] }
+{function;pushEmbed;
+    {push;{params;0};fields.name:{params;1}}
+    {push;{params;0};fields.name:{params;2}}
+    {if;{paramslength};>=;4;
+        {push;{params;0};fields.inline:{params;3}};
+        {push;{params;0};fields.inline:false}
+    }
+}
+
+{//; Usage: <variable> <[items,...]> <escaped code> }
+{function;map;
+    {set;~ret.map;[]}
+    {foreach;{params;0};{params;1};
+        {push;~ret.map;{inject;{params;2}}}
+    }
+    {get;~ret.map}
+}
+
+{//; Usage: <{object}> }
+{function;objectToArray;
+    {set;~result;{params}}
+    {set;~result;{apply;regexreplace;{get;~result};/^\{lb}/;[}}
+    {set;~result;{apply;regexreplace;{get;~result};/\{rb}$/;]}}
+    {get;~result}
+}
+
+{//; Usage: <[array]> }
+{function;arrayToObject;
+    {set;~result;{params}}
+    {set;~result;{regexreplace;{get;~result};/^\[/;{lb}}}
+    {set;~result;{regexreplace;{get;~result};/\]$/;{rb}}}
+    {get;~result}
+}

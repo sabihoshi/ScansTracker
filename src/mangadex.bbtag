@@ -1,5 +1,6 @@
 {exec;import_bbtag}
 {exec;import_tracker}
+{exec;import_utils}
 
 {set;~flags;{j;[
     {
@@ -34,11 +35,11 @@
     }
 ]}}
 
-{set;~linksJson;{j;[
+{set;~socials;{j;[
     {
         "name": "twitter",
         "emoji": "<:twitter:262191810804318208>",
-        "link": "((twitter|pbs\\.twimg)\\.com)|t\\.co)"
+        "link": "(((twitter|pbs\\.twimg)\\.com)|t\\.co)"
     },
     {
         "name": "e-hentai",
@@ -67,28 +68,124 @@
     }
 ]}}
 
+{set;~retailLinks;{j;[
+    {
+        "name": "Amazon",
+        "code": "amz",
+        "emoji": "<:amz:704276992198967366>",
+    },
+    {
+        "name": "Bookwalker",
+        "code": "al",
+        "emoji": "<:bw:704276974733885490>",
+        "url": "https:\/\/bookwalker.jp\/"
+    },
+    {
+        "name": "CDJapan",
+        "code": "cdj",
+        "emoji": "<:cdj:704276974801256498>"
+    },
+    {
+        "name": "eBookJapan",
+        "code": "ebj",
+        "emoji": "<:ebj:704276974843199498>"
+    }
+]}}
+
+{set;~informationLinks;{j;[
+    {
+        "name": "MangaUpdates",
+        "code": "mu",
+        "emoji": "<:mu:704080914107465828>",
+        "url": "https:\/\/www.mangaupdates.com\/series.html?id="
+    },
+    {
+        "name": "Anime-Planet",
+        "code": "ap",
+        "emoji": "<:ap:704080914417975396>",
+        "url": "https:\/\/www.anime-planet.com\/manga\/"
+    },
+    {
+        "name": "AniList",
+        "code": "al",
+        "emoji": "<:al:704080914228969593>",
+        "url": "https:\/\/anilist.co\/manga\/"
+    },
+    {
+        "name": "Kitsu",
+        "code": "kt",
+        "emoji": "<:kt:704276974868234270>",
+        "url": "https:\/\/kitsu.io\/manga\/"
+    },
+    {
+        "name": "MyAnimeList",
+        "code": "mal",
+        "emoji": "<:mal:704080914111529209>",
+        "url": "https:\/\/myanimelist.net\/manga\/"
+    },
+    {
+        "name": "NovelUpdates",
+        "code": "nu",
+        "emoji": "<:nu:704080914107465778>",
+        "url": "https:\/\/www.novelupdates.com\/series\/"
+    },
+    {
+        "name": "Doujinshi.org",
+        "code": "dj",
+        "emoji": "<:dj:704284511763955725>",
+        "url": "https:\/\/www.doujinshi.org\/book\/"
+    }
+]}}
+
+{set;~officialLinks;{j;[
+    {
+        "name": "Raw",
+        "code": "raw",
+        "emoji": "Raw"
+    },
+    {
+        "name": "Official English",
+        "code": "engtl",
+        "emoji": "Official English"
+    }
+]}}
+
 {//; Usage: <link> [socials] }
 {function;getMangaDexEmbed;
-    {set;~json;{jget;{request;{func.getMangaDexApiLink;{params}}};body.manga}}
-    {set;~description;{func.decodeBBTag;{htmldecode;{jget;~json;description}}}}
-    {set;~title;{jget;~json;title} :flag_{jget;~json;lang_flag}:}
+    {set;~request;{request;{func.getMangaDexApiLink;{params}}}}
+    {if;{get;~request};==;`404 Not Found`;
+        {throw;Manga ID does not exist.}
+        {return;false}
+    }
+    {set;~manga;{jget;~request;body.manga}}
+    {set;~description;{func.decodeBBTag;{htmldecode;{jget;~manga;description}}}}
+    {set;~title;{jget;~manga;title} :flag_{jget;~manga;lang_flag}:}
     {set;~embed;
-        author.name:{jget;~json;author};
+        author.name:{jget;~manga;author};
         title:{get;~title};
         description:{get;~description};
-        thumbnail.url:https://mangadex.org{jget;~json;cover_url};
+        thumbnail.url:https://mangadex.org{jget;~manga;cover_url};
         fields.name:Genres;
-        fields.value:`{join;{func.getGenres;{jget;~json;genres}};`, `}`;
+        fields.value:`{join;{func.getGenres;{jget;~manga;genres}};`, `}`;
         fields.inline:false;
     }
-    {if;{func.getSocials};==;{null};
-        {push;~embed;fields.name:Links}
-        {push;~embed;fields.value:[<:mangadex:703650493775347736>]({params})}
-        {push;~embed;fields.inline:false};
-        {push;~embed;fields.name:Links}
-        {push;~embed;fields.value:{func.getSocials}}
-        {push;~embed;fields.inline:false}
+    {//; Mangadex specific fields }
+    {func.addLinkField;~embed;Official;{get;~officialLinks};{jget;~manga;links}}
+    {func.addLinkField;~embed;Retail;{get;~retailLinks};{jget;~manga;links}}
+    {func.addLinkField;~embed;Information;{get;~informationLinks};{jget;~manga;links}}
+
+    {//; Group specific fields }
+    {if;{func.getSocials};!=;{null};
+        {func.pushEmbed;~embed;
+            Links;
+            {func.getSocials}
+        };
+        {func.pushEmbed;~embed;
+            Links;
+            [<:mangadex:703650493775347736>]({params})
+        }
     }
+
     {if;{func.getStatusImage};!=;{null};
         {push;~embed;image.url:{func.getStatusImage}};
         {push;~embed;footer.text:Status: {func.getStatus}}
@@ -101,10 +198,9 @@
     {set;~links;{split;{params};{space}}}
     {set;~ret;[]}
     {foreach;~link;~links;
-        {foreach;~linkJson;~linksJson;
-            {set;~regex;/(https?:\/\/|){jget;~linkJson;link}\/.+/i}
-            {if;{inject;{lb}regextest{semi}{get;~link}{semi}{get;~regex}{rb}};
-                {push;~ret;[{jget;~linkJson;emoji}]({get;~match;0})}
+        {foreach;~social;~socials;
+            {if;{apply;regextest;{get;~link};/(https?:\/\/|){jget;~social;link}\/.+/i};
+                {push;~ret;[{jget;~social;emoji}]({get;~match;0})}
             }
         }
     }
@@ -144,11 +240,19 @@
     }
 }
 
-{//; Usage: <variable> <[items,...]> <escaped code> }
-{function;map;
-    {set;~ret.map;[]}
-    {foreach;{params;0};{params;1};
-        {push;~ret.map;{inject;{params;2}}}
+{//; Usage: <embedVariable> <name> <{jsonLinks}> <[links, ...]>
+ //  This adds the links provided by MangaDex
+ //  Into separate fields by category.
+ //}
+{function;addLinkField;
+    {set;~links;[]}
+    {foreach;~json;{params;2};
+        {set;~id;{jget;{params;3};{jget;~json;code}}}
+        {if;{get;~id};!=;{null};
+            {push;~links;[{jget;~json;emoji}]({jget;~json;url}{get;~id})}
+        }
     }
-    {get;~ret.map}
+    {if;{length;{get;~links}};>;0;
+        {func.pushEmbed;{params;0};{params;1};{join;~links;{space}}}
+    }
 }
