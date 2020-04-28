@@ -37,3 +37,10 @@
 {function;getShield;
     https://raster.shields.io/badge/{params;0}-{params;1}-{params;2}
 }
+
+{//; Usage: [question] [channelid] [userid] }
+{function;prompt;
+    {void;{send;{channelid};{params;0}}}
+    {fallback;}
+    {waitmessage;{channelid};{userid};}
+}
