@@ -1,10 +1,10 @@
 {//; Usage: <variable> <name> <value> [inline] }
 {function;pushEmbed;
     {push;{params;0};fields.name:{params;1}}
-    {push;{params;0};fields.name:{params;2}}
-    {if;{paramslength};>=;4;
+    {push;{params;0};fields.value:{params;2}}
+    {if;{paramslength};>;3;
         {push;{params;0};fields.inline:{params;3}};
-        {push;{params;0};fields.inline:false}
+        {push;{params;0};fields.inline:true}
     }
 }
 
@@ -31,4 +31,9 @@
     {set;~result;{regexreplace;{get;~result};/^\[/;{lb}}}
     {set;~result;{regexreplace;{get;~result};/\]$/;{rb}}}
     {get;~result}
+}
+
+{//; Usage: [label] [message] [color] }
+{function;getShield;
+    https://raster.shields.io/badge/{params;0}-{params;1}-{params;2}
 }
