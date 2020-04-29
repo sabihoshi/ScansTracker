@@ -1,0 +1,11 @@
+{function;getSocials;
+
+}
+
+{function;getStatus;
+
+}
+
+{function;getStatusImage;
+    https://raster.shields.io/badge/status-unknown-lightgrey
+}

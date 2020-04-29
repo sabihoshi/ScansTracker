@@ -1,5 +1,5 @@
 {exec;import_bbtag}
-{exec;import_tracker}
+{exec;import_settings}
 {exec;import_utils}
 
 {set;~flags;{j;[
@@ -150,7 +150,7 @@
     }
 ]}}
 
-{//; Usage: <link> [socials] }
+{//; Usage: <link> [socials] [status] }
 {function;getMangaDexEmbed;
     {set;~request;{request;{func.getMangaDexApiLink;{params}}}}
     {if;{get;~request};==;`404 Not Found`;
@@ -167,7 +167,7 @@
         thumbnail.url:https://mangadex.org{jget;~manga;cover_url};
         fields.name:Genres;
         fields.value:`{join;{func.getGenres;{jget;~manga;genres}};`, `}`;
-        fields.inline:false;
+        fields.inline:false
     }
     {//; Mangadex specific fields }
     {func.addLinkField;~embed;Official;{get;~officialLinks};{jget;~manga;links}}
@@ -190,7 +190,7 @@
         {push;~embed;image.url:{func.getStatusImage}};
         {push;~embed;footer.text:Status: {func.getStatus}}
     }
-    {apply;embedbuild;{get;~embed}}
+    {get;~embed}
 }
 
 {//; Usage: <links> }

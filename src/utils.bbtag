@@ -38,9 +38,122 @@
     https://raster.shields.io/badge/{params;0}-{params;1}-{params;2}
 }
 
-{//; Usage: [question] [channelid] [userid] }
+{//; Usage: <question> [options] [channelids] [users]  }
 {function;prompt;
-    {void;{send;{channelid};{params;0}}}
-    {fallback;}
-    {waitmessage;{channelid};{userid};}
+    {set;~channelIds;{func.??;{params;2};{channelid}}}
+    {set;~users;{func.??;{params;3};{userid}}}
+    {set;~embed;
+        author.icon_url:{useravatar;{get;~users}};
+        author.name:{username;{get;~users}}#{userdiscrim;{get;~users}};
+        description:{params;0};
+        footer.text:Reply with c or cancel to cancel.
+    }
+    {if;{func.!?;{params;1}};
+        {set;~valid;}
+        {push;~valid;{params;1}}
+    }
+    {void;{set;~messageId;{send;{channelid};{apply;embedbuild;{get;~embed}}}}}
+    {set;~response;{waitmessage;{channelid};{userid};
+        {if;{func.!?;{params;1}};
+            {bool;
+                {concat;["c", "cancel"];{params;1}};
+                contains;
+                {lower;{messagetext}}
+            }
+        }
+    }}
+    {if;{regextest;{get;~response};/^`Wait timed out after \d+`$/}
+        {set;~type;{if;{func.?;{params;1}};send;edit}}
+        {func.errorEmbed;
+            You took too long.;
+            {get;~messageId};
+            {get;~channelIds}
+            {get;~type}
+        }
+        {return}
+    }
+    {get;~response;3}
+}
+
+{//; Usage: <question> <options> <responses> [channelIds] [users] }
+{function;promptReaction;
+    {set;~channelIds;{func.??;{params;2};{channelid}}}
+    {set;~users;{func.??;{params;3};{userid}}}
+    {if;{length;{params;1}};!=;{length;{params;2}};
+        {throw;options and responses must have the same length}
+        {return;false}
+    }
+    {set;~embed;
+        author.icon_url:{useravatar;{get;~users}};
+        author.name:{username;{get;~users}}#{userdiscrim;{get;~users}};
+        description:{params;0};
+        footer.text:React with :x: to cancel.
+    }
+    {set;~valid;[":x:"]}
+    {push;~valid;{params;1}}
+    {void;{set;~message;{send;{get;~channelIds};{apply;embedbuild;{get;~embed}}}}}
+    {set;~reaction;{waitreact;{get;~message};{userid};{get;~valid}}}
+    {switch;{get;~reaction;3};
+        :x:;
+            {func.errorEmbed;
+                Command was cancelled.;
+                {get;~reaction;1};
+                {get;~reaction;0};
+                {get;~reaction;2};
+                edit
+            }
+            {return};
+        {params;1};
+            {jget;{params;2};{indexof;{params;1};{get;~reaction;3}}}
+    }
+}
+
+{//; Usage: <message> <messageId> [channelId] [userid] [type] }
+{function;errorEmbed;
+    {set;~channelid;{func.??;{params;2};{channelid}}}
+    {set;~user;{func.??;{params;3};{userid}}}
+    {set;~type;{func.??;{params;4};send}}
+    {set;~embed;
+        author.icon_url:{useravatar;{get;~user}};
+        author.name:{username;{get;~user}}#{userdiscrim;{get;~user}};
+        description:{params;0};
+        footer.text::x: Error;
+        color:red
+    }
+    {apply;{get;~type};{get;~channelid};{params;1};{apply;embedbuild;{get;~embed}}}
+}
+
+{//; Usage: [item]
+ //  Checks if item is null
+ // }
+{function;?;
+    {if;{isarray;{params;0}};
+        {bool;{length;{params;0}};==;0};
+        {if;{logic;||;
+                {bool;{params;0};==;`Not enough arguments`}
+                {bool;{params};==;{null}}};
+            true;
+            false
+        }
+    }
+}
+
+{//; Usage: [item]
+ //  Checks if item is not null
+ // }
+{function;!?;
+    {logic;!;{func.?;{params;0}}}
+}
+
+{//; Usage: [item] [default] }
+{function;??;
+    {if;{func.?;{params;0}};
+        {params;1};
+        {params;0}
+    }
+}
+
+{//; Usage: <message> }
+{function;debug;
+    {void;{send;{channelid};Debug {time;x}```log{newline}{regexreplace;{params};/`/g;\`}```}}
 }

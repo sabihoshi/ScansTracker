@@ -1,11 +1,79 @@
-{function;getSocials;
+{exec;import_mangadex}
 
+{set;~flags;{j;[
+    {
+        "flag": "t",
+        "name": "Title",
+        "embedName": "title",
+        "isRequired": true
+    },
+    {
+        "flag": "a",
+        "name": "Author",
+        "embedName": "author.name",
+        "isRequired": false
+    },
+    {
+        "flag": "d",
+        "variable": "Description",
+        "embedName": "description",
+        "isRequired": false
+    },
+    {
+        "flag": "i",
+        "name": "Image",
+        "embedName": "image.url",
+        "isRequired": false
+    },
+    {
+        "flag": "c",
+        "name": "Color",
+        "embedName": "color",
+        "isRequired": false
+    }
+]}}
+
+{//; Usage: [mangadexLink] }
+{function;addTracker;
+    {set;~e;[]}
+    {if;{func.!?;{params;0}};
+        {foreach;~i;{func.getMangaDexEmbed;{params;0}};
+            {push;~e;{get;~i}}
+        }
+    }
+
+    {//; Embed overriddes }
+    {foreach;~flag;~flags;
+        {if;{flagset;{jget;~flag;flag}};
+            {push;~e;{jget;~flag;embedName}:{flag;{jget;~flag;flag}}};
+            {if;
+                {logic;&&;
+                    {jget;~flag;isRequired};
+                    {bool;{length;{filter;~i;~e;{bool;{get;~i};startswith;{jget;~flag;embedName}}}};==;0}};
+                {push;~e;{jget;~flag;embedName}:{func.prompt;Please reply with a {jget;~flag;name}}}
+            }
+        }
+    }
+    {embed;{apply;embedbuild;{get;~e}}}
 }
 
-{function;getStatus;
+{switch;{lower;{args;0}};
+    add;{func.addTracker;{slice;{argsarray};1}};
+    {ui;
+        - Details
+            None: Title
+            a: Author
+            d: Description
+            i: Image
+            s: Subtitle
+            c: Color
+            C: Content (text outside embed)
 
-}
-
-{function;getStatusImage;
-
+        - Links
+            t: Twitter
+            e: e-hentai
+            E: exhentai
+            n: Nhentai
+            m: mangadex
+    }
 }
