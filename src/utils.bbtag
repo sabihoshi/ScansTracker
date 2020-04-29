@@ -129,11 +129,9 @@
 {function;?;
     {if;{isarray;{params;0}};
         {bool;{length;{params;0}};==;0};
-        {if;{logic;||;
-                {bool;{params;0};==;`Not enough arguments`}
-                {bool;{params};==;{null}}};
-            true;
-            false
+        {logic;||;
+            {bool;{params;0};==;`Not enough arguments`};
+            {bool;{params};==;{null}}
         }
     }
 }
@@ -153,7 +151,13 @@
     }
 }
 
-{//; Usage: <message> }
+{//; Usage: <title> <message> }
 {function;debug;
-    {void;{send;{channelid};Debug {time;x}```log{newline}{regexreplace;{params};/`/g;\`}```}}
+    {set;~embed.debug;
+        title:{params;0};
+        description:{params;1};
+        color:red;
+        timestamp:{time}
+    }
+    {void;{send;{channelid};{apply;embedbuild;{get;~embed.debug}}}}
 }
