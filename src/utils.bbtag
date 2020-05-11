@@ -54,7 +54,7 @@
     }
     {void;{set;~messageId;{send;{channelid};{apply;embedbuild;{get;~embed}}}}}
     {set;~response;{waitmessage;{channelid};{userid};
-        {if;{func.!?;{params;1}};
+        {if;{func.?;{params;1}};true;
             {bool;
                 {concat;["c", "cancel"];{params;1}};
                 contains;
@@ -148,6 +148,20 @@
     {if;{func.?;{params;0}};
         {params;1};
         {params;0}
+    }
+}
+
+{//; Usage: <json> <path>
+ //  Increment a json value
+ // }
+{function;++;
+    {if;{logic;&&;
+            {bool;{apply;j;{get;{params;0}}};!=;`Invalid JSON provided`};
+            {regextest;{jget;{params;0};{params;1}};/^[0-9]$/}};
+        {set;~value;{jget;{params;0};{params;1}}}
+        {jset;{params;0};{params;1};{increment;~value}}
+        {get;~value};
+        {throw;NaN}
     }
 }
 
