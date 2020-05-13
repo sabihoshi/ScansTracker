@@ -1,4 +1,6 @@
 {exec;import_mangadex}
+{exec;import_settings}
+{exec;catlib}
 
 {set;~flags;{j;[
     {
@@ -35,6 +37,7 @@
 
 {//; Usage: [mangadexLink] }
 {function;addTracker;
+    {func.ensureDataIsInitialized}
     {set;~e;[]}
     {if;{func.!?;{params;0}};
         {foreach;~i;{func.getMangaDexEmbed;{params;0}};
@@ -54,6 +57,8 @@
             }
         }
     }
+    {jset;~workData;id;{increment;@.{guildid}.trackerData}}
+    {func.cl_jpush;@.{guildid}.trackerData.ids;}
     {embed;{apply;embedbuild;{get;~e}}}
 }
 

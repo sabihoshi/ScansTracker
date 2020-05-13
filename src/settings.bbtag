@@ -1,3 +1,65 @@
+{exec;import_utils}
+
+{set;~serverSettings;{j;[
+    {
+        "flag": "t",
+        "name": "Title",
+        "embedName": "title",
+        "isRequired": true
+    },
+    {
+        "flag": "a",
+        "name": "Author",
+        "embedName": "author.name",
+        "isRequired": false
+    },
+    {
+        "flag": "d",
+        "variable": "Description",
+        "embedName": "description",
+        "isRequired": false
+    },
+    {
+        "flag": "i",
+        "name": "Image",
+        "embedName": "image.url",
+        "isRequired": false
+    },
+    {
+        "flag": "c",
+        "name": "Color",
+        "embedName": "color",
+        "isRequired": false
+    }
+]}}
+
+{//; Usage: [name] [isPrivate] }
+{function;ensureDataIsInitialized;
+    {if;{func.?;{get;@trackers}};
+        {jset;@trackers;{j;{
+            "items": 0,
+            "groups": []
+        }}}
+    }
+
+    {if;{func.?;{get;@.{guildid}.trackerData}};
+        {set;~}
+        {jset;@.{guildid}.trackerData;{j;{
+            "items": 0,
+            "works": [],
+            "subscribers": []
+        }}}
+        {jset;@.{guildid}.trackerData;isPrivate;
+            {func.??;{params;1};false};c
+        }
+        {jset;@.{guildid}.trackerData;name;{func.??;{params;0};{guildname}};c}
+
+        {jset;~groupData;id;{guildid};c}
+        {jset;~groupData;registration;{time;x}}
+        {func;cl_jpush;@trackers;groups;{get;~groupData}}
+    }
+}
+
 {function;getSocials;
 
 }
